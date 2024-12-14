@@ -64,7 +64,11 @@ jobs:
               console.log("No pull request context available.");
             }
 
+      - name: Block or Merge Pull Request
+        run: |
+          echo env.action 
 
+        
       # Block or Merge Pull Request
       - name: Block or Merge Pull Request
         if: env.action == 'block'
