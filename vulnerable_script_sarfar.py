@@ -30,4 +30,6 @@ def login():
 
 if __name__ == '__main__':
     create_database()
+
+    
     app.run(debug=True)
