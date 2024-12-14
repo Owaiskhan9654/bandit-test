@@ -29,15 +29,16 @@ jobs:
         run: |
           bandit -r . -f json -o bandit_output.json || echo "Bandit scan completed"
 
-      # Analyze Bandit scan results
       - name: Analyze Bandit Results
         id: analyze_results
         run: |
           critical_issues=$(jq '.results[] | select(.issue_severity=="CRITICAL")' bandit_output.json)
           if [ -n "$critical_issues" ]; then
             echo "action=block" >> $GITHUB_ENV
-          else:
+          else
             echo "action=merge" >> $GITHUB_ENV
+          fi
+
 
       - name: Comment on Pull Request
         uses: actions/github-script@v6
