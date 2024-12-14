@@ -39,19 +39,25 @@ jobs:
           else:
             echo "action=merge" >> $GITHUB_ENV
 
-      # Comment on the pull request
       - name: Comment on Pull Request
         uses: actions/github-script@v6
         with:
           script: |
             const action = process.env.action;
             const message = action === "block" ? "Block" : "Successful";
-            github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.payload.pull_request.number,
-              body: message
-            });
+      
+            // Ensure pull request context exists
+            if (context.payload.pull_request) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: message,
+              });
+            } else {
+              console.log("No pull request context available.");
+            }
+
 
       # Block or Merge Pull Request
       - name: Block or Merge Pull Request
