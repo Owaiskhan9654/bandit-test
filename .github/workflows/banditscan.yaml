@@ -6,37 +6,40 @@ on:
       - main
 
 jobs:
-  scan:
+  code-scan:
     runs-on: ubuntu-latest
+
     steps:
+      # Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
+      # Set up Python environment and install Bandit
       - name: Set up Python
         uses: actions/setup-python@v4
         with:
-          python-version: '3.x'
+          python-version: "3.x"
 
       - name: Install Bandit
         run: pip install bandit
 
+      # Run Bandit to scan the repository
       - name: Run Bandit
         id: bandit_scan
-        run: bandit -r . -f json -o bandit_output.json || echo "Bandit scan completed"
+        run: |
+          bandit -r . -f json -o bandit_output.json || echo "Bandit scan completed"
 
+      # Analyze Bandit scan results
       - name: Analyze Bandit Results
         id: analyze_results
         run: |
           critical_issues=$(jq '.results[] | select(.issue_severity=="CRITICAL")' bandit_output.json)
           if [ -n "$critical_issues" ]; then
-            echo "Found critical vulnerabilities"
             echo "action=block" >> $GITHUB_ENV
-          else
+          else:
             echo "action=merge" >> $GITHUB_ENV
-          fi
-        env:
-          GITHUB_ENV: ${{ github.env }}
 
+      # Comment on the pull request
       - name: Comment on Pull Request
         uses: actions/github-script@v6
         with:
@@ -50,8 +53,7 @@ jobs:
               body: message
             });
 
+      # Block or Merge Pull Request
       - name: Block or Merge Pull Request
         if: env.action == 'block'
         run: exit 1
-        env:
-          GITHUB_ENV: ${{ github.env }}
