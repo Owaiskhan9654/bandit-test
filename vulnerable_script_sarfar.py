@@ -6,8 +6,6 @@ import os
 PASSWORD = "12345"
 
 
-
-
 # 2. Subprocess with unsanitized input
 def run_command(cmd):
     subprocess.run(cmd, shell=True)  # Vulnerable to command injection
