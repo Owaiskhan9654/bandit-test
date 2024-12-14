@@ -50,7 +50,7 @@ jobs:
         with:
           script: |
             const action = process.env.action;
-            const message = action === "block" ? "Block" : "Successful";
+            const message = action === "block" ? "Successful": "Block";
       
             // Ensure pull request context exists
             if (context.payload.pull_request) {
