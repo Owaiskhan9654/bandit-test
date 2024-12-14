@@ -28,5 +28,3 @@ if __name__ == "__main__":
     print("Loaded user data:", user_data)
     hashed = hash_password(PASSWORD)
     print(f"MD5 hashed password: {hashed}")
-
-
