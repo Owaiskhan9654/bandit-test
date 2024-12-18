@@ -49,9 +49,18 @@ jobs:
         uses: actions/github-script@v6
         with:
           script: |
+            const fs = require('fs');
+            const path = './bandit_output.json';
+
             const action = process.env.action;
-            const message = action === "block" ? "Successful": "Block";
-      
+            const commentBody = fs.existsSync(path)
+              ? fs.readFileSync(path, 'utf8')
+              : "Bandit output file not found.";
+
+            const message = action === "block"
+              ? `Block\n\n${commentBody}`
+              : `Successful\n\n${commentBody}`;
+
             // Ensure pull request context exists
             if (context.payload.pull_request) {
               await github.rest.issues.createComment({
