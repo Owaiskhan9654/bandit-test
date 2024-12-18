@@ -6,7 +6,6 @@ app = Flask(__name__)
 def create_database():
     conn = sqlite3.connect('example.db')
 
-
     c = conn.cursor()
     c.execute('''CREATE TABLE IF NOT EXISTS users (id INTEGER PRIMARY KEY, username TEXT, password TEXT)''')
     c.execute("INSERT INTO users (username, password) VALUES ('admin', 'adminpass')")
