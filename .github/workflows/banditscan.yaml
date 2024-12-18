@@ -45,33 +45,33 @@ jobs:
           fi
 
 
-      - name: Comment on Pull Request
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const fs = require('fs');
-            const path = './bandit_output.json';
+      # - name: Comment on Pull Request
+      #   uses: actions/github-script@v6
+      #   with:
+      #     script: |
+      #       const fs = require('fs');
+      #       const path = './bandit_output.json';
 
-            const action = process.env.action;
-            const commentBody = fs.existsSync(path)
-              ? fs.readFileSync(path, 'utf8')
-              : "Bandit output file not found.";
+      #       const action = process.env.action;
+      #       const commentBody = fs.existsSync(path)
+      #         ? fs.readFileSync(path, 'utf8')
+      #         : "Bandit output file not found.";
 
-            const message = action === "block"
-              ? `Block\n\n${commentBody}`
-              : `Successful\n\n${commentBody}`;
+      #       const message = action === "block"
+      #         ? `Block\n\n${commentBody}`
+      #         : `Successful\n\n${commentBody}`;
 
-            // Ensure pull request context exists
-            if (context.payload.pull_request) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                body: message,
-              });
-            } else {
-              console.log("No pull request context available.");
-            }
+      #       // Ensure pull request context exists
+      #       if (context.payload.pull_request) {
+      #         await github.rest.issues.createComment({
+      #           owner: context.repo.owner,
+      #           repo: context.repo.repo,
+      #           issue_number: context.payload.pull_request.number,
+      #           body: message,
+      #         });
+      #       } else {
+      #         console.log("No pull request context available.");
+      #       }
 
       - name: Block or Merge Pull Request
         run: |
@@ -101,3 +101,46 @@ jobs:
           level: low
           confidence: low
           exit_zero: flase
+
+
+
+      - name: Analyze Bandit Results
+        id: analyze_results2
+        run: |
+          # Extract and summarize results
+          severity_counts=$(grep "SEVERITY" bandit-output.log | awk '{print $2, $3, $4, $5}')
+          high_issues=$(echo "$severity_counts" | awk '{print $4}')  # Extract HIGH severity count
+
+          # Determine action based on HIGH severity count
+          if [ "$high_issues" -gt 0 ]; then
+            echo "action=block" >> $GITHUB_ENV
+          else
+            echo "action=merge" >> $GITHUB_ENV
+          fi
+
+      # Step 4: Comment on Pull Request with Summary
+      - name: Comment on Pull Request
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const action = process.env.action;
+            const summary = `## Bandit Scan Summary\n\n${fs.readFileSync('bandit-output.log', 'utf8')}`;
+            const message = action === "block"
+              ? `### Action: Block\n\n${summary}`
+              : `### Action: Successful\n\n${summary}`;
+
+            if (context.payload.pull_request) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: message,
+              });
+            } else {
+              console.log("No pull request context available.");
+            }
+
+      # Step 5: Block or Merge Pull Request
+      - name: Block or Merge Pull Request
+        if: env.action == 'block'
+        run: exit 1
