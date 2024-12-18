@@ -1,3 +1,152 @@
+# name: Code Scan with Bandit
+
+# on:
+#   pull_request:
+#     branches:
+#       - main
+
+# permissions:
+#   issues: write
+#   pull-requests: write
+
+
+# jobs:
+#   code-scan:
+#     runs-on: ubuntu-latest
+
+#     steps:
+#       # Checkout the repository
+#       - name: Checkout code
+#         uses: actions/checkout@v3
+
+#       # Set up Python environment and install Bandit
+#       - name: Set up Python
+#         uses: actions/setup-python@v4
+#         with:
+#           python-version: "3.x"
+
+#       - name: Install Bandit
+#         run: pip install bandit
+
+#       # Run Bandit to scan the repository
+#       - name: Run Bandit
+#         id: bandit_scan
+#         run: |
+#           bandit -r . -f json -o bandit_output.json || echo "Bandit scan completed"
+
+#       - name: Analyze Bandit Results
+#         id: analyze_results
+#         run: |
+#           critical_issues=$(jq '.results[] | select(.issue_severity=="CRITICAL")' bandit_output.json)
+#           if [ -n "$critical_issues" ]; then
+#             echo "action=block" >> $GITHUB_ENV
+#           else
+#             echo "action=merge" >> $GITHUB_ENV
+#           fi
+
+
+#       - name: Comment on Pull Request
+#         uses: actions/github-script@v6
+#         with:
+#           script: |
+#             const fs = require('fs');
+#             const path = './bandit_output.json';
+
+#             const action = process.env.action;
+#             const commentBody = fs.existsSync(path)
+#               ? fs.readFileSync(path, 'utf8')
+#               : "Bandit output file not found.";
+
+#             const message = action === "block"
+#               ? `Block\n\n${commentBody}`
+#               : `Successful\n\n${commentBody}`;
+
+#             // Ensure pull request context exists
+#             if (context.payload.pull_request) {
+#               await github.rest.issues.createComment({
+#                 owner: context.repo.owner,
+#                 repo: context.repo.repo,
+#                 issue_number: context.payload.pull_request.number,
+#                 body: message,
+#               });
+#             } else {
+#               console.log("No pull request context available.");
+#             }
+
+#       - name: Block or Merge Pull Request
+#         run: |
+#           echo env.action 
+
+        
+#       # Block or Merge Pull Request
+#       - name: Block or Merge Pull Request
+#         if: env.action == 'block'
+#         run: exit 1
+
+
+#       # Step 6: Block or Merge Pull Request
+#       - name: Block or Merge Pull Request2
+#         if: env.action == 'block'
+#         run: |
+#           echo env.action 
+#           echo "Blocking the pull request due to critical vulnerabilities."
+#           exit 1
+
+
+#       - name: Bandit Scan
+#         uses: mdegis/bandit-action@v1.0
+#         with:
+#           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+#           path: "."
+#           level: low
+#           confidence: low
+#           exit_zero: flase
+
+
+
+#       - name: Analyze Bandit Results
+#         id: analyze_results2
+#         run: |
+#           # Extract and summarize results
+#           severity_counts=$(grep "SEVERITY" bandit-output.log | awk '{print $2, $3, $4, $5}')
+#           high_issues=$(echo "$severity_counts" | awk '{print $4}')  # Extract HIGH severity count
+
+#           # Determine action based on HIGH severity count
+#           if [ "$high_issues" -gt 0 ]; then
+#             echo "action=block" >> $GITHUB_ENV
+#           else
+#             echo "action=merge" >> $GITHUB_ENV
+#           fi
+
+#       # Step 4: Comment on Pull Request with Summary
+#       - name: Comment on Pull Request
+#         uses: actions/github-script@v6
+#         with:
+#           script: |
+#             const action = process.env.action;
+#             const summary = `## Bandit Scan Summary\n\n${fs.readFileSync('bandit-output.log', 'utf8')}`;
+#             const message = action === "block"
+#               ? `### Action: Block\n\n${summary}`
+#               : `### Action: Successful\n\n${summary}`;
+
+#             if (context.payload.pull_request) {
+#               await github.rest.issues.createComment({
+#                 owner: context.repo.owner,
+#                 repo: context.repo.repo,
+#                 issue_number: context.payload.pull_request.number,
+#                 body: message,
+#               });
+#             } else {
+#               console.log("No pull request context available.");
+#             }
+
+#       # Step 5: Block or Merge Pull Request
+#       - name: Block or Merge Pull Request
+#         if: env.action == 'block'
+#         run: exit 1
+
+
+
 name: Code Scan with Bandit
 
 on:
@@ -9,90 +158,16 @@ permissions:
   issues: write
   pull-requests: write
 
-
 jobs:
   code-scan:
     runs-on: ubuntu-latest
 
     steps:
-      # Checkout the repository
+      # Step 1: Checkout the repository
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Set up Python environment and install Bandit
-      - name: Set up Python
-        uses: actions/setup-python@v4
-        with:
-          python-version: "3.x"
-
-      - name: Install Bandit
-        run: pip install bandit
-
-      # Run Bandit to scan the repository
-      - name: Run Bandit
-        id: bandit_scan
-        run: |
-          bandit -r . -f json -o bandit_output.json || echo "Bandit scan completed"
-
-      - name: Analyze Bandit Results
-        id: analyze_results
-        run: |
-          critical_issues=$(jq '.results[] | select(.issue_severity=="CRITICAL")' bandit_output.json)
-          if [ -n "$critical_issues" ]; then
-            echo "action=block" >> $GITHUB_ENV
-          else
-            echo "action=merge" >> $GITHUB_ENV
-          fi
-
-
-      - name: Comment on Pull Request
-        uses: actions/github-script@v6
-        with:
-          script: |
-            const fs = require('fs');
-            const path = './bandit_output.json';
-
-            const action = process.env.action;
-            const commentBody = fs.existsSync(path)
-              ? fs.readFileSync(path, 'utf8')
-              : "Bandit output file not found.";
-
-            const message = action === "block"
-              ? `Block\n\n${commentBody}`
-              : `Successful\n\n${commentBody}`;
-
-            // Ensure pull request context exists
-            if (context.payload.pull_request) {
-              await github.rest.issues.createComment({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                issue_number: context.payload.pull_request.number,
-                body: message,
-              });
-            } else {
-              console.log("No pull request context available.");
-            }
-
-      - name: Block or Merge Pull Request
-        run: |
-          echo env.action 
-
-        
-      # Block or Merge Pull Request
-      - name: Block or Merge Pull Request
-        if: env.action == 'block'
-        run: exit 1
-
-
-      # Step 6: Block or Merge Pull Request
-      - name: Block or Merge Pull Request2
-        if: env.action == 'block'
-        run: |
-          echo env.action 
-          echo "Blocking the pull request due to critical vulnerabilities."
-          exit 1
-
-
+      # Step 2: Run Bandit Scan
       - name: Bandit Scan
         uses: mdegis/bandit-action@v1.0
         with:
@@ -100,21 +175,21 @@ jobs:
           path: "."
           level: low
           confidence: low
-          exit_zero: flase
+          exit_zero: false
 
-
-
+      # Step 3: Analyze Bandit Results
       - name: Analyze Bandit Results
-        id: analyze_results2
+        id: analyze_results
         run: |
           # Extract and summarize results
           severity_counts=$(grep "SEVERITY" bandit-output.log | awk '{print $2, $3, $4, $5}')
           high_issues=$(echo "$severity_counts" | awk '{print $4}')  # Extract HIGH severity count
 
-          # Determine action based on HIGH severity count
+          # Output summary and set action
+          echo "Bandit Summary: $severity_counts" >> $GITHUB_ENV
           if [ "$high_issues" -gt 0 ]; then
             echo "action=block" >> $GITHUB_ENV
-          else
+          else:
             echo "action=merge" >> $GITHUB_ENV
           fi
 
@@ -124,10 +199,10 @@ jobs:
         with:
           script: |
             const action = process.env.action;
-            const summary = `## Bandit Scan Summary\n\n${fs.readFileSync('bandit-output.log', 'utf8')}`;
+            const summary = process.env['Bandit Summary'];
             const message = action === "block"
-              ? `### Action: Block\n\n${summary}`
-              : `### Action: Successful\n\n${summary}`;
+              ? `### Action: Block\n\n## Bandit Scan Summary\n\n${summary}`
+              : `### Action: Successful\n\n## Bandit Scan Summary\n\n${summary}`;
 
             if (context.payload.pull_request) {
               await github.rest.issues.createComment({
