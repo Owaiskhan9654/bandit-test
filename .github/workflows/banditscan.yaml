@@ -82,3 +82,13 @@ jobs:
           echo env.action 
           echo "Blocking the pull request due to critical vulnerabilities."
           exit 1
+
+
+      - name: Bandit Scan
+        uses: mdegis/bandit-action@v1.0
+        with:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          path: "."
+          level: low
+          confidence: low
+          exit_zero: true
