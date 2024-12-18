@@ -177,6 +177,12 @@ jobs:
           confidence: low
           exit_zero: false
 
+      - name: Bandit Scan
+        run: |
+              bandit -r . -f txt -o bandit-output.log
+
+
+
       # Step 3: Analyze Bandit Results
       - name: Analyze Bandit Results
         id: analyze_results
