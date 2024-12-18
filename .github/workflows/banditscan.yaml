@@ -91,4 +91,4 @@ jobs:
           path: "."
           level: low
           confidence: low
-          exit_zero: true
+          exit_zero: flase
