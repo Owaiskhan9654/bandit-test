@@ -45,33 +45,33 @@ jobs:
           fi
 
 
-      # - name: Comment on Pull Request
-      #   uses: actions/github-script@v6
-      #   with:
-      #     script: |
-      #       const fs = require('fs');
-      #       const path = './bandit_output.json';
+      - name: Comment on Pull Request
+        uses: actions/github-script@v6
+        with:
+          script: |
+            const fs = require('fs');
+            const path = './bandit_output.json';
 
-      #       const action = process.env.action;
-      #       const commentBody = fs.existsSync(path)
-      #         ? fs.readFileSync(path, 'utf8')
-      #         : "Bandit output file not found.";
+            const action = process.env.action;
+            const commentBody = fs.existsSync(path)
+              ? fs.readFileSync(path, 'utf8')
+              : "Bandit output file not found.";
 
-      #       const message = action === "block"
-      #         ? `Block\n\n${commentBody}`
-      #         : `Successful\n\n${commentBody}`;
+            const message = action === "block"
+              ? `Block\n\n${commentBody}`
+              : `Successful\n\n${commentBody}`;
 
-      #       // Ensure pull request context exists
-      #       if (context.payload.pull_request) {
-      #         await github.rest.issues.createComment({
-      #           owner: context.repo.owner,
-      #           repo: context.repo.repo,
-      #           issue_number: context.payload.pull_request.number,
-      #           body: message,
-      #         });
-      #       } else {
-      #         console.log("No pull request context available.");
-      #       }
+            // Ensure pull request context exists
+            if (context.payload.pull_request) {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body: message,
+              });
+            } else {
+              console.log("No pull request context available.");
+            }
 
       - name: Block or Merge Pull Request
         run: |
