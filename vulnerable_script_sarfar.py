@@ -19,8 +19,6 @@ def login():
     password = request.args.get('password')
     conn = sqlite3.connect('example.db')
     c = conn.cursor()
-
-
     
     query = f"SELECT * FROM users WHERE username = '{username}' AND password = '{password}'"
     print("Executing query:", query)
